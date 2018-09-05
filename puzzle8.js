@@ -3,9 +3,8 @@ var meta =[ ["1","2","3"],
             ["7","8","9"] ];											
 
 var estado = copiaEstado(meta);	
-var ultimo = copiaEstado(meta);											// guarda o estado antes da solução
-														// movimentos realizados pelo jogador (humano)
-
+var ultimo = copiaEstado(meta);											
+														
 var movimentos = 0;
 var pilha = [];															
 var fechados = [];														
@@ -23,11 +22,46 @@ function copiaEstado(estado) {
 }
 
 function exibeEstado(estado) {		// exibe estado na tela
+     var estadonew = new Array();
 	for (var i=0; i<3; i++)
 		for (var j=0; j<3; j++) {
-			console.log("p"+i+j);			
-			console.log("c"+estado[i][j]);
+
+			//console.log("p"+i+j);			
+			//console.log("c"+estado[i][j]);
 			console.log(estado[i][j]);
+			estadonew.push([i][j]);
 		}
+console.log(estadonew);
+	
 }
+console.log(meta);
 //exibeEstado()
+
+
+function buscaSolucao(alg) {											
+	var modo = alg;
+	if (!modo)
+		return;														
+	
+	ultimo = copiaEstado(estado);				
+	
+	pilha = [];
+	fechados = [];
+	solucao = [];
+	nodos = 0;
+	movimentos = 0;												
+  
+	if (modo[0] == "A") {	
+								
+		nodo.valorh = calculaHeuristica(estado,modo);					
+		nodo.valorf = nodo.valorh;
+		pilha.push(nodo);												
+		
+		//iteracaoBusca(modo,profundMax);									
+	}
+}
+
+
+
+
+
