@@ -6,7 +6,7 @@ var Puzzle = {
         this.processados = [];
         return oResultado;
     },
-    
+
     encontraFim: function (oTabIni, oTabFim) {
         var oFim  = null;
         var aTabs = this.geraNovosTabuleiros(oTabIni);
@@ -86,10 +86,12 @@ var Puzzle = {
             }
         }
     }
+
 };
 var Tabuleiro = function (inicial) {
     this.pai = null;
     this.posicoes = inicial;
+    this.print(); //printa estado
 
 };
 Tabuleiro.prototype.equals = function (oCompar) {
@@ -117,6 +119,7 @@ Tabuleiro.prototype.troca = function (aOri, aDes) {
     var sValorDes = this.posicoes[aDes[0]][aDes[1]];
     this.posicoes[aOri[0]][aOri[1]] = sValorDes;
     this.posicoes[aDes[0]][aDes[1]] = sValorOri;
+
 };
 Tabuleiro.prototype.print = function (bFormTab) {
     bFormTab = bFormTab ? bFormTab : true;
@@ -130,6 +133,7 @@ Tabuleiro.prototype.print = function (bFormTab) {
     fs.appendFileSync('movimentos.txt', sInfo + '\n');
 };
 Tabuleiro.prototype.printSteps = function () {
+
     var aPais = [], oPai = this.pai;
     while(oPai !== null){
         aPais.push(oPai);
@@ -153,6 +157,7 @@ Tabuleiro.prototype.h1 = function (oTabFim) {
         }
     }
     return iPosErradas;
+
 };
 Tabuleiro.prototype.h2 = function (oTabFim) {
     var iSomaMovimentos = 0;
