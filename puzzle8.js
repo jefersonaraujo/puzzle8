@@ -1,149 +1,203 @@
-var meta =[ ["1","2","3"],
-            ["4","5","6"],
-            ["7","8","9"] ];											
+var fs = require('fs');
+var Puzzle = {
+    processados: [],
+    ini: function (oTabIni, oTabFim) {
+        var oResultado   = this.encontraFim(oTabIni, oTabFim);
+        this.processados = [];
+        return oResultado;
+    },
+    
+    encontraFim: function (oTabIni, oTabFim) {
+        var oFim  = null;
+        var aTabs = this.geraNovosTabuleiros(oTabIni);
+        while (oFim === null) {
+            if (!this.isProcessado(aTabs[0])) {
+                this.ordena(aTabs, oTabFim);
+            } else {
+                aTabs = aTabs.slice(1);
+                continue;
+            }
+            this.processados.push(aTabs[0]);
+            if (aTabs[0].equals(oTabFim)) {
+                oFim = aTabs[0];
+            } else {
+                aTabs = aTabs.concat(this.geraNovosTabuleiros(aTabs[0]));
+            }
+        }
+        return oFim;
+    },
+    geraNovosTabuleiros: function (oTab) {
+        var aNewTabuleiro = [], aNewPos = [];
+        var aPosZero = oTab.achaZero();
+        var x = aPosZero[0], y = aPosZero[1];
+        if (x == 0 && y == 0) {
+            aNewPos = [[1, 0], [0, 1]];
+        }
+        else if (x == 1 && y == 0) {
+            aNewPos = [[0, 0], [2, 0], [1, 1]];
+        }
+        else if (x == 2 && y == 0) {
+            aNewPos = [[1, 0], [2, 1]];
+        }
+        else if (x == 0 && y == 1) {
+            aNewPos = [[0, 0], [1, 1], [0, 2]];
+        }
+        else if (x == 1 && y == 1) {
+            aNewPos = [[0, 1], [1, 0], [2, 1], [1, 2]];
+        }
+        else if (x == 2 && y == 1) {
+            aNewPos = [[1, 1], [2, 0], [2, 2]];
+        }
+        else if (x == 0 && y == 2) {
+            aNewPos = [[0, 1], [1, 2]];
+        }
+        else if (x == 1 && y == 2) {
+            aNewPos = [[0, 2], [1, 1], [2, 2]];
+        }
+        else if (x == 2 && y == 2) {
+            aNewPos = [[1, 2], [2, 1]];
+        }
+        for (var i in aNewPos) {
+            var oNovo = oTab.clone();
+            oNovo.pai = oTab;
+            oNovo.troca(aPosZero, aNewPos[i]);
+            if (!this.isProcessado(oNovo)) {
+                aNewTabuleiro.push(oNovo);
+            }
+        }
+        return aNewTabuleiro;
+    },
+    isProcessado: function (oTab) {
+        for (var i in this.processados) {
+            if (this.processados[i].equals(oTab))
+                return true;
+        }
+        return false;
+    },
+    ordena: function (aTabs, oTabFim) {
+        for (var i = 0; i < aTabs.length; i++) {
+            for (var j = 0; j < (aTabs.length - (i + 1)); j++) {
+                if (aTabs[j].heuristica(oTabFim) > aTabs[j + 1].heuristica(oTabFim)) {
+                    var oTabTemp = aTabs[j];
+                    aTabs[j] = aTabs[j + 1];
+                    aTabs[j + 1] = oTabTemp;
+                    oTabTemp = null;
+                }
+            }
+        }
+    }
+};
+var Tabuleiro = function (inicial) {
+    this.pai = null;
+    this.posicoes = inicial;
 
-var estado = copiaEstado(meta);	
-var ultimo = copiaEstado(meta);											
-														
-var movimentos = 0;
-var pilha = [];															
-var fechados = [];														
-var nodos = 0;
-var solucao = [];	
-
-
-// copia elementos do array
-function copiaEstado(estado) {											
-	var retorno = [];
-	for (var i = 0; i < estado.length; i++)								
-		retorno[i] = estado[i].slice(0);		
-
-	return retorno;
+};
+Tabuleiro.prototype.equals = function (oCompar) {
+    for (var y in this.posicoes) {
+        for (var x in this.posicoes[y]) {
+            if (this.posicoes[y][x] != oCompar.posicoes[y][x])
+                return false;
+        }
+    }
+    return true;
+};
+Tabuleiro.prototype.achaNum = function (num) {
+    for (var y in this.posicoes) {
+        for (var x in this.posicoes[y]) {
+            if (this.posicoes[y][x] == num)
+                return [y, x];
+        }
+    }
+};
+Tabuleiro.prototype.achaZero = function () {
+    return this.achaNum(0);
+};
+Tabuleiro.prototype.troca = function (aOri, aDes) {
+    var sValorOri = this.posicoes[aOri[0]][aOri[1]];
+    var sValorDes = this.posicoes[aDes[0]][aDes[1]];
+    this.posicoes[aOri[0]][aOri[1]] = sValorDes;
+    this.posicoes[aDes[0]][aDes[1]] = sValorOri;
+};
+Tabuleiro.prototype.print = function (bFormTab) {
+    bFormTab = bFormTab ? bFormTab : true;
+    var sInfo = '';
+    for (var y in this.posicoes) {
+        for (var x in this.posicoes[y]) {
+            sInfo += this.posicoes[y][x] + (bFormTab ? ' ' : '');
+        }
+        sInfo += (bFormTab ? '\n' : '');
+    }
+    fs.appendFileSync('movimentos.txt', sInfo + '\n');
+};
+Tabuleiro.prototype.printSteps = function () {
+    var aPais = [], oPai = this.pai;
+    while(oPai !== null){
+        aPais.push(oPai);
+        oPai = oPai.pai;
+    }
+    aPais = aPais.reverse();
+    for(var i in aPais){
+        aPais[i].print();
+    }
+    this.print();
+    // console.log("Log aqui");
+    // console.log(aPais[i]);
+};
+Tabuleiro.prototype.h1 = function (oTabFim) {
+    var iPosErradas = 0;
+    for (var y in this.posicoes) {
+        for (var x in this.posicoes[y]) {
+            if (this.posicoes[y][x] != 0 && this.posicoes[y][x] != oTabFim.posicoes[y][x]) {
+                iPosErradas++;
+            }
+        }
+    }
+    return iPosErradas;
+};
+Tabuleiro.prototype.h2 = function (oTabFim) {
+    var iSomaMovimentos = 0;
+    for (var y in this.posicoes) {
+        for (var x in this.posicoes[y]) {
+            if (this.posicoes[y][x] != 0) {
+                var aPosNum = oTabFim.achaNum(this.posicoes[y][x]);
+                var iDifX = Math.abs(aPosNum[0] - y);
+                var iDifZ = Math.abs(aPosNum[1] - x);
+                iSomaMovimentos += iDifX + iDifZ;
+            }
+        }
+    }
+    return iSomaMovimentos;
+};
+Tabuleiro.prototype.heuristica = function (oTabFim) {
+    return this.h1(oTabFim) + this.h2(oTabFim);
+};
+Tabuleiro.prototype.clone = function () {
+    var oClone = new Tabuleiro(cloneArrayMultidimensional(this.posicoes));
+    oClone.pai = this.pai;
+    return oClone;
+};
+function cloneArrayMultidimensional(aArray) {
+    var aClone = [];
+    for (var i in aArray) {
+        aClone.push(aArray[i].slice(0));
+    }
+    return aClone;
 }
-
-function exibeEstado(estado) {		// exibe estado na tela
-     var estadonew = new Array();
-	for (var i=0; i<3; i++)
-		for (var j=0; j<3; j++) {
-
-			//console.log("p"+i+j);			
-			//console.log("c"+estado[i][j]);
-			console.log(estado[i][j]);
-			estadonew.push([i][j]);
-		}
-console.log(estadonew);
-	
+function now() {
+    var oData = new Date();
+    console.log(oData.getHours() + ":" + oData.getMinutes() + ":" + oData.getSeconds() + "." + oData.getMilliseconds());
 }
-console.log(meta);
-//exibeEstado()
-
-
-function buscaSolucao(alg) {											
-	var modo = alg;
-	if (!modo)
-		return;														
-	
-	ultimo = copiaEstado(estado);				
-	
-	pilha = [];
-	fechados = [];
-	solucao = [];
-	nodos = 0;
-	movimentos = 0;												
-  
-	if (modo[0] == "A") {	
-								
-		nodo.valorh = calculaHeuristica(estado,modo);					
-		nodo.valorf = nodo.valorh;
-		pilha.push(nodo);												
-		
-		//iteracaoBusca(modo,profundMax);									
-	}
-}
-
-
-function iteracaoBusca(modo,pmax) {
-	var nodo = {};
-	var profundidade, i;
-  
-	while (pilha.length) {
-		 console.log(pilha.length);	// exibe tamanho da pilha/fila
-		if (modo[0] == "A") 											
-		nodos++;
-		if (modo[0] == "A")												
-		fechados.push(nodo);										
-
-		estado = nodo.estado;
-		profundidade = nodo.profundidade;
-
-		if (comparaEstados(estado,meta)) {
-			
-			
-			solucao.push(nodo.estado);									
-			while (nodo.pai) {
-				nodo = nodo.pai;
-				solucao.push(nodo.estado);
-			}
-			estado = solucao.pop();										
-			exibeEstado(estado);							
-			
-			return;
-		}
-		else {															
-			if (profundidade < pmax)									
-				geraFilhos(nodo,profundidade,modo);
-		}
-	}
-	
-}
-
-
-// gera os filhos de um nodo
-function geraFilhos(nodo,profundidade,modo) {
-	profundidade++;
-	
-	for (var i=0; i<3; i++)
-		for (var j=0; j<3; j++) 
-			if (nodo.estado[i][j] == "9") {								// localiza o espaço em branco
-// gera os filhos possíveis e coloca na pilha
-				if (i > 0)
-					empilhaFilho(nodo,profundidade,modo,i,j,i-1,j);		// move o branco para cima
-				if (i < 2)
-					empilhaFilho(nodo,profundidade,modo,i,j,i+1,j);		// move o branco para baixo
-				if (j > 0)
-					empilhaFilho(nodo,profundidade,modo,i,j,i,j-1);		// move o branco para a esquerda
-				if (j < 2)
-					empilhaFilho(nodo,profundidade,modo,i,j,i,j+1);		// move o branco para a direita
-
-				return; // encerra, nao precisa terminar os loops
-			}
-}
-
-
-// cria nodo e adiciona-o à fila/pilha
-function empilhaFilho(pai,profundidade,modo,io,jo,id,jd) {
-	var filho, estado, valorg, valorf, valorh, i;
-
-	estado = copiaEstado(pai.estado);
-	trocaPeca(estado,io,jo,id,jd);
-
-	if (modo[0] == "A") {												
-		if (procuraLista(fechados,estado))
-			return;														
-		valorg = pai.valorg + 1;
-		valorh = calculaHeuristica(estado,modo);						
-		valorf = valorg + valorh;
-		filho = {estado: estado, profundidade: profundidade, pai: pai, valorf: valorf, valorg: valorg, valorh: valorh};
-		i = procuraLista(pilha,estado);									
-		if (i != null) {
-			if (pilha[i].valorg <= valorg)								
-				return;													
-			else
-				pilha.splice(i,1);										
-		}
-		insereFilaPrioridade(filho);									
-	}
-}
-
-
-
+var oTabIni = new Tabuleiro([
+    [1,2,3],
+    [4,5,0],
+    [7,8,6]
+]);
+var oTabFim = new Tabuleiro([
+    [1,2,3],
+    [4,5,6],
+    [0,7,8]
+]);
+now();
+var oRes = Puzzle.ini(oTabIni, oTabFim);
+oRes.printSteps();
+now();
