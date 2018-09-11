@@ -5,6 +5,7 @@ var Puzzle = {
         var oResultado   = this.encontraFim(oTabIni, oTabFim);
         this.processados = [];
         return oResultado;
+
     },
 
     encontraFim: function (oTabIni, oTabFim) {
@@ -65,6 +66,7 @@ var Puzzle = {
                 aNewTabuleiro.push(oNovo);
             }
         }
+
         return aNewTabuleiro;
     },
     isProcessado: function (oTab) {
@@ -89,11 +91,14 @@ var Puzzle = {
 
 };
 var Tabuleiro = function (inicial) {
+
     this.pai = null;
     this.posicoes = inicial;
-    this.print(); //printa estado
+
+
 
 };
+
 Tabuleiro.prototype.equals = function (oCompar) {
     for (var y in this.posicoes) {
         for (var x in this.posicoes[y]) {
@@ -119,6 +124,7 @@ Tabuleiro.prototype.troca = function (aOri, aDes) {
     var sValorDes = this.posicoes[aDes[0]][aDes[1]];
     this.posicoes[aOri[0]][aOri[1]] = sValorDes;
     this.posicoes[aDes[0]][aDes[1]] = sValorOri;
+
 
 };
 Tabuleiro.prototype.print = function (bFormTab) {
@@ -173,6 +179,8 @@ Tabuleiro.prototype.h2 = function (oTabFim) {
     }
     return iSomaMovimentos;
 };
+
+//heuristica
 Tabuleiro.prototype.heuristica = function (oTabFim) {
     return this.h1(oTabFim) + this.h2(oTabFim);
 };
@@ -190,12 +198,14 @@ function cloneArrayMultidimensional(aArray) {
 }
 function now() {
     var oData = new Date();
+
     console.log(oData.getHours() + ":" + oData.getMinutes() + ":" + oData.getSeconds() + "." + oData.getMilliseconds());
+    
 }
 var oTabIni = new Tabuleiro([
     [1,2,3],
-    [4,5,0],
-    [7,8,6]
+    [4,0,6],
+    [7,5,8]
 ]);
 var oTabFim = new Tabuleiro([
     [1,2,3],
