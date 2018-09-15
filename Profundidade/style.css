@@ -1,0 +1,16 @@
+
+.container {
+	border :;
+}
+
+.esq{
+	float : left;
+	border: ;
+	margin-left : 150px;
+}
+
+.dir{
+	float : right;
+	border: ;
+    margin-right : 150px;
+}
